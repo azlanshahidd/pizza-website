@@ -1,0 +1,17 @@
+{
+  "name": "pizzahub-frontend",
+  "version": "1.0.0",
+  "description": "Frontend for PizzaHub - Online Pizza Ordering System",
+  "scripts": {
+    "start": "npx http-server -p 3000 -o",
+    "dev": "npx http-server -p 3000 -o"
+  },
+  "keywords": [
+    "pizza",
+    "ecommerce",
+    "frontend",
+    "restaurant"
+  ],
+  "author": "PizzaHub Team",
+  "license": "MIT"
+}

@@ -1,0 +1,26 @@
+{
+  "name": "pizzahub-fullstack",
+  "version": "1.0.0",
+  "description": "Complete Full-Stack Pizza E-Commerce Platform",
+  "scripts": {
+    "install-all": "cd backend && npm install && cd ../frontend && npm install",
+    "backend": "cd backend && npm run dev",
+    "frontend": "cd frontend && npm start",
+    "dev": "concurrently \"npm run backend\" \"npm run frontend\"",
+    "seed": "cd backend && npm run seed",
+    "start": "npm run dev"
+  },
+  "keywords": [
+    "pizza",
+    "ecommerce",
+    "fullstack",
+    "nodejs",
+    "express",
+    "mongodb"
+  ],
+  "author": "PizzaHub Team",
+  "license": "MIT",
+  "devDependencies": {
+    "concurrently": "^8.2.0"
+  }
+}
