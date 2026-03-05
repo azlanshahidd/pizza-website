@@ -47,12 +47,10 @@ data/
 # Uploads (if you add file upload feature)
 uploads/
 *.pdf
-*.jpg
-*.jpeg
-*.png
-*.gif
-!frontend/pictures/*.jpg
-!frontend/pictures/*.png
+!pictures/*.jpg
+!pictures/*.jpeg
+!pictures/*.png
+!pictures/*.gif
 
 # Testing
 coverage/
