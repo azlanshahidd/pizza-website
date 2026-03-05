@@ -1,5 +1,5 @@
 // ===== CONFIGURATION =====
-const API_URL = 'http://localhost:5000/api';
+// Backend removed - using localStorage only
 
 // ===== STATE MANAGEMENT =====
 let cart = JSON.parse(localStorage.getItem('cart')) || [];

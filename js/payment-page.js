@@ -6,8 +6,6 @@
 (function() {
     'use strict';
 
-    const API_URL = 'http://localhost:5000/api';
-
     // Initialize when DOM is ready
     if (document.readyState === 'loading') {
         document.addEventListener('DOMContentLoaded', init);
