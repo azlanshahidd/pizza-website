@@ -65,7 +65,7 @@ router.post('/register', async (req, res) => {
 });
 
 // @route   POST /api/users/login
-// @desc    Login user / Send OTP
+// @desc    Login user (no OTP required)
 // @access  Public
 router.post('/login', async (req, res) => {
     try {
@@ -106,117 +106,7 @@ router.post('/login', async (req, res) => {
             user = await User.create({ phone: cleanPhone });
         }
 
-        // Generate a 6-digit OTP
-        const otp = Math.floor(100000 + Math.random() * 900000).toString();
-        
-        // Store OTP with 10 minute expiry
-        user.otp = otp;
-        user.otpExpiry = Date.now() + 10 * 60 * 1000; // 10 minutes
-        user.otpAttempts = 0; // Reset attempts
-        await user.save();
-
-        console.log(`📱 OTP for ${cleanPhone}: ${otp}`); // For demo purposes
-        console.log(`⏰ OTP expires at: ${new Date(user.otpExpiry).toLocaleTimeString()}`);
-
-        // In production, send actual SMS via Twilio, AWS SNS, or other SMS service
-        // await sendSMS(cleanPhone, `Your Hungry? Pizza? OTP is: ${otp}. Valid for 10 minutes.`);
-
-        res.json({
-            success: true,
-            message: 'OTP sent successfully',
-            // In production, don't send OTP in response
-            otp: process.env.NODE_ENV === 'development' ? otp : undefined,
-            expiresIn: '10 minutes'
-        });
-    } catch (error) {
-        console.error('Error sending OTP:', error);
-        res.status(500).json({
-            success: false,
-            message: 'Error sending OTP',
-            error: error.message
-        });
-    }
-});
-
-// @route   POST /api/users/verify-otp
-// @desc    Verify OTP and login
-// @access  Public
-router.post('/verify-otp', async (req, res) => {
-    try {
-        const { phone, otp } = req.body;
-
-        if (!phone || !otp) {
-            return res.status(400).json({
-                success: false,
-                message: 'Phone number and OTP are required'
-            });
-        }
-
-        // Validate OTP format (6 digits)
-        if (!/^\d{6}$/.test(otp)) {
-            return res.status(400).json({
-                success: false,
-                message: 'OTP must be 6 digits'
-            });
-        }
-
-        const cleanPhone = phone.replace(/\s/g, '');
-        const user = await User.findOne({ phone: cleanPhone });
-
-        if (!user) {
-            return res.status(404).json({
-                success: false,
-                message: 'User not found. Please request OTP first.'
-            });
-        }
-
-        // Check if OTP exists
-        if (!user.otp) {
-            return res.status(400).json({
-                success: false,
-                message: 'No OTP found. Please request a new OTP.'
-            });
-        }
-
-        // Check OTP expiry
-        if (user.otpExpiry < Date.now()) {
-            // Clear expired OTP
-            user.otp = undefined;
-            user.otpExpiry = undefined;
-            await user.save();
-            
-            return res.status(400).json({
-                success: false,
-                message: 'OTP has expired. Please request a new OTP.'
-            });
-        }
-
-        // Check for too many attempts (rate limiting)
-        if (user.otpAttempts >= 5) {
-            return res.status(429).json({
-                success: false,
-                message: 'Too many failed attempts. Please request a new OTP.'
-            });
-        }
-
-        // Verify OTP
-        if (user.otp !== otp) {
-            // Increment failed attempts
-            user.otpAttempts = (user.otpAttempts || 0) + 1;
-            await user.save();
-            
-            const remainingAttempts = 5 - user.otpAttempts;
-            
-            return res.status(400).json({
-                success: false,
-                message: `Invalid OTP. ${remainingAttempts} attempts remaining.`
-            });
-        }
-
-        // OTP is valid - clear it and log user in
-        user.otp = undefined;
-        user.otpExpiry = undefined;
-        user.otpAttempts = 0;
+        // Update last login
         user.lastLogin = Date.now();
         await user.save();
 
@@ -238,14 +128,16 @@ router.post('/verify-otp', async (req, res) => {
             }
         });
     } catch (error) {
-        console.error('Error verifying OTP:', error);
+        console.error('Error logging in:', error);
         res.status(500).json({
             success: false,
-            message: 'Error verifying OTP',
+            message: 'Error logging in',
             error: error.message
         });
     }
 });
+
+// OTP verification removed - direct login is now used
 
 // @route   GET /api/users/profile
 // @desc    Get user profile
@@ -261,7 +153,7 @@ router.get('/profile', async (req, res) => {
             });
         }
 
-        const user = await User.findOne({ phone }).select('-otp -otpExpiry');
+        const user = await User.findOne({ phone });
 
         if (!user) {
             return res.status(404).json({
@@ -302,7 +194,7 @@ router.put('/profile', async (req, res) => {
             { phone },
             { email, fullName, address },
             { new: true, runValidators: true }
-        ).select('-otp -otpExpiry');
+        );
 
         if (!user) {
             return res.status(404).json({
@@ -331,7 +223,7 @@ router.put('/profile', async (req, res) => {
 // @access  Admin
 router.get('/', async (req, res) => {
     try {
-        const users = await User.find().select('-otp -otpExpiry').sort({ createdAt: -1 });
+        const users = await User.find().sort({ createdAt: -1 });
         
         res.json({
             success: true,

@@ -19,16 +19,6 @@ const userSchema = new mongoose.Schema({
     address: {
         type: String
     },
-    otp: {
-        type: String
-    },
-    otpExpiry: {
-        type: Date
-    },
-    otpAttempts: {
-        type: Number,
-        default: 0
-    },
     role: {
         type: String,
         enum: ['user', 'admin'],
